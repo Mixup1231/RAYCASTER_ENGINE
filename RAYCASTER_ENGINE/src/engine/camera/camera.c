@@ -16,29 +16,11 @@ Camera camera_create(f32 x, f32 y, f32 angle, f32 fov, f32 view_width, f32 view_
 	return camera;
 }
 
-void camera_move(Camera* camera, CameraDirection direction, u32 units) {
+void camera_move(Camera* camera, const vec2 velocity) {
 	assert(camera);
 
-	switch (direction) {
-	case CAMERA_FORWARD:
-		camera->position[0] += cos(camera->angle) * units;
-		camera->position[1] += sin(camera->angle) * units;
-		break;
-	case CAMERA_BACK:
-		camera->position[0] -= cos(camera->angle) * units;
-		camera->position[1] -= sin(camera->angle) * units;
-		break;
-	case CAMERA_LEFT:
-		camera->position[0] += cos(camera->angle - RADIANS(90)) * units;
-		camera->position[1] += sin(camera->angle - RADIANS(90)) * units;
-		break;
-	case CAMERA_RIGHT:
-		camera->position[0] += cos(camera->angle + RADIANS(90)) * units;
-		camera->position[1] += sin(camera->angle + RADIANS(90)) * units;
-		break;
-	default:
-		return;
-	}
+	camera->position[0] += velocity[0];
+	camera->position[1] += velocity[1];
 }
 
 void camera_rotate(Camera* camera, f32 offset) {

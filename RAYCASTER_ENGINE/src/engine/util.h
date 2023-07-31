@@ -13,7 +13,12 @@
 
 #define CLAMP(r, max) (r = r > max ? max : r)
 
-#define PI 3.141592653
+#define TWO_PI			 6.283185306
+#define THREE_PI_ON_TWO  4.712388975
+#define PI				 3.141592653
+#define PI_ON_TWO		 1.570796327
+#define PI_ON_FOUR		 0.785398163 
+
 #define RADIANS(x) (((x) * PI) / 180)
 #define DEGREES(x) (((x) * 180) / PI)
 
