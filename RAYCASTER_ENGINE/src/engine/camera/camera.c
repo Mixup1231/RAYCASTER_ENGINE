@@ -29,8 +29,8 @@ void camera_rotate(Camera* camera, f32 offset) {
 	assert(camera);
 
 	camera->angle -= offset;
-	if (DEGREES(camera->angle) < 0)
+	if (camera->angle < 0)
 		camera->angle += 2 * PI;
-	else if (DEGREES(camera->angle) > 360)
+	else if (camera->angle > TWO_PI)
 		camera->angle -= 2 * PI;
 }
