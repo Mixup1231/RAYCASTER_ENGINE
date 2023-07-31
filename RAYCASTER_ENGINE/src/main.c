@@ -28,6 +28,7 @@ TODO:
 	variable height (both models and player y pos)
 	floor
 	roof
+	sprites
 */
 
 int main() {
@@ -54,7 +55,8 @@ int main() {
 
 		render_begin();
 
-		render_quad((vec2) { width / 2, height }, (vec2) { width, height }, (vec4){0.2, 0.2, 0.1, 1}, 0);
+		render_quad((vec2) { width / 2, 0 }, (vec2) { width, height }, (vec4) { 0.1, 0.2, 0.7, 1 }, 0);
+		render_quad((vec2) { width / 2, height }, (vec2) { width, height }, (vec4){0.2, 0.5, 0.1, 1}, 0);
 
 		if (input_get_key_state(SDL_SCANCODE_W) == INPUT_HELD) {
 			player_velocity[0] = cosf(player.angle);

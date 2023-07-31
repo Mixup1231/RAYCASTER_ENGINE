@@ -3,6 +3,8 @@
 
 #include "../types.h"
 
+#define CAMERA_MAX_FOV 360
+
 typedef struct {
 	vec2 position;
 	f32 angle;

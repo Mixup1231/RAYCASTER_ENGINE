@@ -5,6 +5,8 @@
 #include "../render/render.h"
 #include "../util.h"
 
+static u32 resolution_scale = 2;
+
 static f32 start_angle;
 static f32 ray_angle;
 
@@ -33,12 +35,16 @@ SliceArray ray_slice_array_create(const Camera* camera) {
 	assert(camera);
 
 	SliceArray slice_array = {
-		.length = camera->fov,
+		.length = camera->fov * resolution_scale,
 	};
-	slice_array.items = calloc(camera->fov, sizeof(Slice));
+	slice_array.items = calloc(camera->fov * resolution_scale, sizeof(Slice));
 	assert(slice_array.items);
 
 	return slice_array;
+}
+
+void ray_set_resolution_scale(u32 scale) {
+	resolution_scale = scale;
 }
 
 f32 wrap_angle(f32 angle) {
@@ -186,17 +192,37 @@ void ray_resolve_collision(RayCollision collision, vec2 velocity) {
 void ray_cast_level(const Camera* camera, const Level* level, SliceArray* out_slices) {
 	assert(camera && level && out_slices && out_slices->items);
 
-	start_angle = camera->angle - RADIANS(camera->fov / 2);
+	f32 scaled_slice_width = camera->view_width / (level->slice_width * camera->fov) * level->slice_width;
+	scaled_slice_width /= resolution_scale;
 
-	for (size_t i = 0; i < camera->fov; i++) {
-		ray_angle = wrap_angle(start_angle + RADIANS(i));
+	start_angle = camera->angle - RADIANS(camera->fov / 2);
+	for (size_t i = 0; i < camera->fov * resolution_scale; i++) {
+		ray_angle = wrap_angle(start_angle + RADIANS((f32)i / resolution_scale));
 		ray_cast(level, camera->position, ray_angle, RAY_DOF);
 
 		f32 distance = vert_dist < horiz_dist ? vert_dist * cosf(camera->angle - ray_angle) : horiz_dist * cosf(camera->angle - ray_angle);
 		f32 proj_height = level->width / distance * camera->proj_plane_dist;
-		f32 scaled_slice_width = camera->view_width / (level->slice_width * camera->fov) * level->slice_width;
+		proj_height *= resolution_scale;
 
 		out_slices->items[i].vertical = vert_dist < horiz_dist;
+
+		if (out_slices->items[i].vertical) {
+			if (camera->position[0] < ax)
+				out_slices->items[i].normal[0] = -1;
+			else
+				out_slices->items[i].normal[0] = 1;
+			out_slices->items[i].normal[1] = 0;
+		}
+		else {
+			if (camera->position[1] < ay)
+				out_slices->items[i].normal[1] = -1;
+			else
+				out_slices->items[i].normal[1] = 1;
+			out_slices->items[i].normal[0] = 0;
+		}
+
+		out_slices->distances[i] = distance;
+
 		out_slices->items[i].position[0] = i * scaled_slice_width;
 		out_slices->items[i].position[1] = camera->height_centre;
 
@@ -222,23 +248,9 @@ void ray_render_level(const SliceArray* slices, const vec2 offset) {
 	for (usize i = 0; i < slices->length; i++) {
 		vec2_scale(position, position, 0);
 		vec2_add(position, slices->items[i].position, offset);
-
-		if (slices->items[i].vertical) {
-			vec4 colour;
-			if (slices->items[i].texture == 1)
-				vec4_scale(colour, BLACK, slices->items[i].intensity);
-			else
-				vec4_scale(colour, WHITE, slices->items[i].intensity);
-			colour[3] = 1;
-			render_slice(position, slices->items[i].size, colour, slices->items[i].texture, slices->items[i].uv_coords);
-		} else {
-			vec4 colour;
-			if (slices->items[i].texture == 1)
-				vec4_scale(colour, BLACK, slices->items[i].intensity);
-			else
-				vec4_scale(colour, GREY, slices->items[i].intensity);
-			colour[3] = 1;
-			render_slice(position, slices->items[i].size, colour, slices->items[i].texture, slices->items[i].uv_coords);
-		}
+		if (slices->items[i].vertical)
+			render_slice(position, slices->items[i].size, WHITE, slices->items[i].texture, slices->items[i].uv_coords, GREY, slices->items[i].intensity);
+		else
+			render_slice(position, slices->items[i].size, GREY, slices->items[i].texture, slices->items[i].uv_coords, GREY, slices->items[i].intensity);
 	}
 }

@@ -29,7 +29,7 @@ SDL_Window* render_init(u32 width, u32 height, const char* window_name) {
     window_height = height;
     
     default_shader = render_init_shaders("shaders/shader_default.vert", "shaders/shader_default.frag");
-    default_shader_shift = render_init_shaders("shaders/shader_default_shift.vert", "shaders/shader_default.frag");
+    default_shader_shift = render_init_shaders("shaders/shader_default_shift.vert", "shaders/shader_default_shift.frag");
     
     texture_map = map_create(sizeof(Texture), hash_string);
     render_init_texture_default(&default_texture);
@@ -160,7 +160,7 @@ void render_quad(const vec2 position, const vec2 size, const vec4 colour, const 
     glUseProgram(0);
 }
 
-void render_slice(const vec2 position, const vec2 size, const vec4 colour, const u32 texture, vec2 uv_shift) {
+void render_slice(const vec2 position, const vec2 size, const vec4 colour, const u32 texture, const vec2 uv_shift, const vec4 fog_colour, f32 intensity) {
     glUseProgram(default_shader_shift);
 
     if (!texture)
@@ -180,6 +180,20 @@ void render_slice(const vec2 position, const vec2 size, const vec4 colour, const
         &model[0][0]
     );
 
+    glUniform2f(
+        glGetUniformLocation(default_shader_shift, "uv_shift"),
+        uv_shift[0],
+        uv_shift[1]
+    );
+
+    glUniform4f(
+        glGetUniformLocation(default_shader_shift, "fog_colour"),
+        fog_colour[0],
+        fog_colour[1],
+        fog_colour[2],
+        fog_colour[3]
+    );
+
     glUniform4f(
         glGetUniformLocation(default_shader_shift, "colour"),
         colour[0],
@@ -188,10 +202,9 @@ void render_slice(const vec2 position, const vec2 size, const vec4 colour, const
         colour[3]
     );
 
-    glUniform2f(
-        glGetUniformLocation(default_shader_shift, "uv_shift"),
-        uv_shift[0],
-        uv_shift[1]
+    glUniform1f(
+        glGetUniformLocation(default_shader_shift, "intensity"),
+        intensity
     );
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);

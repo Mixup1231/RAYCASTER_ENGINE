@@ -21,5 +21,5 @@ u32 render_get_window_width(void);
 u32 render_get_window_height(void);
 
 void render_quad(const vec2 position, const vec2 size, const vec4 colour, const u32 texture);
-void render_slice(const vec2 position, const vec2 size, const vec4 colour, const u32 texture, vec2 uv_shift);
+void render_slice(const vec2 position, const vec2 size, const vec4 colour, const u32 texture, const vec2 uv_shift, const vec4 fog_colour, f32 intensity);
 void render_line(const vec2 start, const vec2 end, const vec4 colour, const u32 line_width);

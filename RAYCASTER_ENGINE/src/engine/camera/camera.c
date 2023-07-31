@@ -4,6 +4,8 @@
 #include "../util.h"
 
 Camera camera_create(f32 x, f32 y, f32 angle, f32 fov, f32 view_width, f32 view_height) {
+	assert(0 <= fov && fov <= CAMERA_MAX_FOV);
+
 	Camera camera = {
 		.position = {x, y},
 		.angle = angle,
